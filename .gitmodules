@@ -1,0 +1,9 @@
+[submodule "libsigrokdecode"]
+	path = libsigrokdecode
+	url = https://github.com/kolod/libsigrokdecode.git
+[submodule "sigrok-test"]
+	path = sigrok-test
+	url = https://github.com/kolod/sigrok-test.git
+[submodule "sigrok-dumps"]
+	path = sigrok-dumps
+	url = https://github.com/kolod/sigrok-dumps.git
