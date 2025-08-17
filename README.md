@@ -15,7 +15,123 @@ This package provides Python tools for working with sigrok-cli, including utilit
 
 - Python 3.13 or higher
 - Poetry (for development)
+- Git (for cloning submodules)
 
+ ### Git submodules
+
+ This repository uses Git submodules. After cloning (or when pulling updates), initialize and update them:
+
+ ```bash
+ # If you already cloned the repo
+ git submodule update --init --recursive
+
+ # Recommended when cloning for the first time (does init+update in one step)
+ git clone --recurse-submodules https://github.com/kolod/sigrok-dev.git
+ cd sigrok-dev
+
+ # When pulling new changes later
+ git pull
+ git submodule update --init --recursive
+
+ # Optional: update submodules to the latest upstream commits (not just pinned revisions)
+ git submodule update --init --recursive --remote
+ ```
+
+### Working with Sigrok Submodule Forks
+
+This repository contains 3 Git submodules that are forks of the original sigrok repositories. To make synchronized changes across all submodules and create PRs to the upstream repositories:
+
+#### Prerequisites
+- GitHub CLI installed and authenticated: `gh auth login`
+- Your fork repositories should have upstream remotes configured
+
+#### Making Changes Across All Submodules
+
+```powershell
+# Define your branch name for consistent naming across all repos
+$branchName = "feature/my-changes"  # Replace with your actual branch name
+
+# Step 1: Create the same branch in all submodules
+git submodule foreach "git checkout -b $branchName"
+
+# Step 2: Make your changes in each submodule
+# (Edit files in libsigrokdecode/, sigrok-dumps/, sigrok-test/ as needed)
+
+# Step 3: Commit changes in each submodule
+git submodule foreach "git add -A && git commit -m 'Your commit message here'"
+
+# Step 4: Push branches to your fork repositories
+git submodule foreach "git push -u origin $branchName"
+
+# Step 5: Create PRs to upstream repositories
+git submodule foreach "gh pr create --title 'Your PR Title' --body 'Your PR description' --base main"
+```
+
+#### Alternative: Work in each submodule individually
+
+```powershell
+$branchName = "feature/my-changes"
+
+# Work on libsigrokdecode
+cd libsigrokdecode
+git checkout -b $branchName
+# Make your changes...
+git add -A
+git commit -m "libsigrokdecode: your changes"
+git push -u origin $branchName
+gh pr create --title "libsigrokdecode: Your PR Title" --body "Description" --base main
+cd ..
+
+# Work on sigrok-dumps  
+cd sigrok-dumps
+git checkout -b $branchName
+# Make your changes...
+git add -A
+git commit -m "sigrok-dumps: your changes"
+git push -u origin $branchName  
+gh pr create --title "sigrok-dumps: Your PR Title" --body "Description" --base main
+cd ..
+
+# Work on sigrok-test
+cd sigrok-test
+git checkout -b $branchName
+# Make your changes...
+git add -A
+git commit -m "sigrok-test: your changes"
+git push -u origin $branchName
+gh pr create --title "sigrok-test: Your PR Title" --body "Description" --base main
+cd ..
+```
+
+#### Update Superproject with New Submodule Commits
+
+After your PRs are merged (or if you want to update the main repository to point to your new commits):
+
+```powershell
+# Update submodule pointers in the main repository
+git add libsigrokdecode sigrok-dumps sigrok-test
+git commit -m "Update submodules to latest commits"
+git push
+
+# Or create a PR for the superproject changes
+$superBranch = "chore/update-submodules-$(Get-Date -Format yyyyMMdd-HHmmss)"
+git checkout -b $superBranch  
+git add libsigrokdecode sigrok-dumps sigrok-test
+git commit -m "chore: update submodules to include latest changes"
+git push -u origin $superBranch
+gh pr create --fill
+```
+
+#### Useful Tips
+
+- Check submodule status: `git submodule status`
+- See which submodules have uncommitted changes: `git submodule foreach "git status --porcelain"`
+- Reset all submodules to match superproject: `git submodule foreach "git reset --hard"`
+- Ensure upstream remotes are configured in each submodule:
+  ```powershell
+  git submodule foreach "git remote add upstream <original-sigrok-repo-url> || true"
+  git submodule foreach "git fetch upstream"
+  ```
 ### Using Poetry
 
 ```bash
